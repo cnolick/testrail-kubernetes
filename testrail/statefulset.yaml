@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: testrail
+spec:
+  serviceName: testrail
+  replicas: 1
+  selector:
+    matchLabels:
+      app: testrail
+  template:
+    metadata:
+      labels:
+        app: testrail
+    spec:
+      containers:
+        - name: mysql
+          image: testrail/apache:7.0.1.1013
+          ports:
+            - containerPort: 80
+              name: testrail
+          volumeMounts:
+            - name: config
+              mountPath: /var/www/testrail/config/
+            - name: opt
+              mountPath: /opt/testrail
+            - name: auth
+              mountPath: /var/www/testrail/custom/auth/
+      volumes:
+        - name: auth
+          configMap:
+            name: auth-config
+  volumeClaimTemplates:
+    - metadata:
+        name: opt
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 5Gi
+    - metadata:
+        name: config
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 100Mi
+
